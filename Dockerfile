@@ -111,7 +111,7 @@ RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
       wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
       wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
       wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
-      wget -q --header="Authorization: Bearer ${HUGGINGFACE_ACCESS_TOKEN}" -O models/vae/flux/ae.safetensors https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors; \
+      wget -q -O models/vae/flux/ae.safetensors https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors; \
     fi
 
 
