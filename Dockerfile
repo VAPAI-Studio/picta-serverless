@@ -107,8 +107,8 @@ RUN mkdir -p models/checkpoints models/vae models/unet models/clip
 
 # Download checkpoints/vae/unet/clip models to include in image based on model type
 RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
-      wget -q --header="Authorization: Bearer ${HUGGINGFACE_ACCESS_TOKEN}" -O models/unet/FLUX/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
-      wget -q --header="Authorization: Bearer ${HUGGINGFACE_ACCESS_TOKEN}" -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
+      wget -q -O models/unet/FLUX/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
+      wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
       wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
       wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
       wget -q --header="Authorization: Bearer ${HUGGINGFACE_ACCESS_TOKEN}" -O models/vae/flux/ae.safetensors https://huggingface.co/black-forest-labs/FLUX.1-dev/resolve/main/ae.safetensors; \
