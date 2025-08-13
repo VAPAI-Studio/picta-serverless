@@ -47,8 +47,7 @@
       - Remove the polling-related constants (`COMFY_POLLING_INTERVAL_MS`, `COMFY_POLLING_MAX_RETRIES`) and the polling `while` loop.
     - **Error Handling:** Add robust error handling for websocket connection establishment, message receiving/parsing, image data fetching (`/view`), temporary file operations, and S3 uploads.
 3.  **Testing:**
-    - Update unit tests in `tests/` to mock the websocket interactions and verify the new logic.
-    - Perform local end-to-end testing using `docker-compose up` to ensure the integration with a live ComfyUI instance works as expected for both S3 and base64 output modes.
+- Perform local end-to-end testing using `docker-compose up` to ensure the integration with a live ComfyUI instance works as expected for both S3 and base64 output modes.
 
 **Considerations:**
 

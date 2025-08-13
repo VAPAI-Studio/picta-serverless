@@ -2,7 +2,7 @@
 
 This guide covers setting up your local environment for developing and testing the `worker-comfyui`.
 
-Both tests will use the data from [`test_input.json`](../test_input.json), so make your changes in there to test different workflow inputs properly.
+Both tests will use the data from your own workflow files, so make your changes in there to test different workflow inputs properly.
 
 ## Setup
 
@@ -71,25 +71,7 @@ After completing these steps, you should be able to run Docker commands, includi
 
 ## Testing the RunPod Handler
 
-Unit tests are provided to verify the core logic of the `handler.py`.
-
-- **Run all tests**:
-  ```bash
-  python -m unittest discover tests/
-  ```
-- **Run a specific test file**:
-  ```bash
-  python -m unittest tests.test_handler
-  ```
-- **Run a specific test case or method**:
-
-  ```bash
-  # Example: Run all tests in the TestRunpodWorkerComfy class
-  python -m unittest tests.test_handler.TestRunpodWorkerComfy
-
-  # Example: Run a single test method
-  python -m unittest tests.test_handler.TestRunpodWorkerComfy.test_s3_upload
-  ```
+Unit tests are not currently available in this project.
 
 ## Local API Simulation (using Docker Compose)
 

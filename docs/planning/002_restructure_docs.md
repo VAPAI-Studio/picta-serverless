@@ -23,7 +23,7 @@
   - `docs/deployment.md`: Detailed RunPod template/endpoint creation, GPU recommendations.
   - `docs/configuration.md`: Comprehensive list and explanation of all environment variables.
   - `docs/customization.md`: In-depth guide on using Network Volumes and building custom Docker images (models, nodes, snapshots).
-  - `docs/development.md`: Instructions for local setup (Python, WSL), running tests, using `docker-compose`, accessing local API/ComfyUI.
+  - `docs/development.md`: Instructions for local setup (Python, WSL), using `docker-compose`, accessing local API/ComfyUI.
   - `docs/ci-cd.md`: Explanation of the GitHub Actions workflows for Docker Hub deployment (secrets, variables).
   - `docs/acknowledgments.md`: (Optional) Move acknowledgments here.
 - Specific version numbers (e.g., `3.6.0` in image tags) should ideally only reside in the main `README.md` to avoid complicating the release script. If version numbers must exist in other files, the `.releaserc` `prepareCmd` will need modification.

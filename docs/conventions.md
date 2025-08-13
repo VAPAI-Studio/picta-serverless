@@ -55,7 +55,7 @@ This document outlines the key operational and structural conventions for the `w
 
 ## 6. Testing
 
-- **Unit Tests:** Automated tests are located in the `tests/` directory and should be run using `python -m unittest discover`. Add new tests for new functionality or bug fixes.
+- **Unit Tests:** Unit tests are not currently available in this project.
 - **Local Environment:** Use `docker-compose up` for local end-to-end testing. This requires a correctly configured Docker environment with NVIDIA GPU support.
 
 ## 7. Dependencies

@@ -28,7 +28,7 @@ This project allows you to run ComfyUI workflows as a serverless API endpoint on
 1.  🐳 Choose one of the [available Docker images](#available-docker-images) for your serverless endpoint (e.g., `runpod/worker-comfyui:<version>-sd3`).
 2.  📄 Follow the [Deployment Guide](docs/deployment.md) to set up your RunPod template and endpoint.
 3.  ⚙️ Optionally configure the worker (e.g., for S3 upload) using environment variables - see the full [Configuration Guide](docs/configuration.md).
-4.  🧪 Pick an example workflow from [`test_resources/workflows/`](./test_resources/workflows/) or [get your own](#getting-the-workflow-json).
+4.  🧪 Pick an example workflow from [get your own](#getting-the-workflow-json).
 5.  🚀 Follow the [Usage](#usage) steps below to interact with your deployed endpoint.
 
 ## Available Docker Images
@@ -168,7 +168,7 @@ curl -X POST \
 
 You can also use the `/run` endpoint for asynchronous jobs and then poll the `/status` to see when the job is done. Or you [add a `webhook` into your request](https://docs.runpod.io/serverless/endpoints/send-requests#webhook-notifications) to be notified when the job is done.
 
-Refer to [`test_input.json`](./test_input.json) for a complete input example.
+Refer to the [Usage](#usage) section below for a complete input example.
 
 ## Getting the Workflow JSON
 
