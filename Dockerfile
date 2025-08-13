@@ -87,7 +87,9 @@ COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
 RUN chmod +x /usr/local/bin/comfy-node-install
 
 ENV COMFY_WORKSPACE=/comfyui
-RUN cd /comfyui && comfy-node-install "ComfyUI-Easy-Use" "WAS Node Suite"
+RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui
+
+
 # deps típicas
 RUN uv pip install pillow numpy scipy opencv-python requests einops
 
