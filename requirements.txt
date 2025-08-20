@@ -5,7 +5,7 @@ requests
 
 # Image processing dependencies
 numpy
-opencv-python
+opencv-python-headless
 scikit-image
 rembg
 Pillow

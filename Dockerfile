@@ -26,12 +26,15 @@ RUN apt-get update && apt-get install -y \
     python3.12-venv \
     git \
     wget \
-    libgl1 \
+    libgl1-mesa-glx \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender1 \
+    libgomp1 \
+    libgcc-s1 \
     ffmpeg \
+    build-essential \
     && ln -sf /usr/bin/python3.12 /usr/bin/python \
     && ln -sf /usr/bin/pip3 /usr/bin/pip
 
