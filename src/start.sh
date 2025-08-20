@@ -9,6 +9,9 @@ comfy-manager-set-mode offline || echo "worker-comfyui - Could not set ComfyUI-M
 
 echo "worker-comfyui: Starting ComfyUI"
 
+# Add current directory to Python path for module imports
+export PYTHONPATH="${PYTHONPATH}:/"
+
 # Allow operators to tweak verbosity; default is DEBUG.
 : "${COMFY_LOG_LEVEL:=DEBUG}"
 

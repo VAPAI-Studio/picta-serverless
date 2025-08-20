@@ -82,8 +82,12 @@ RUN uv pip install -r requirements.txt
 
 
 # Add application code and scripts
-ADD src/start.sh handler.py comfyui_handler.py recolor_handler.py ./
+ADD src/start.sh ./
+COPY handler.py comfyui_handler.py recolor_handler.py ./
 RUN chmod +x /start.sh
+
+# Debug: List files to ensure they're copied correctly
+RUN ls -la /*.py
 
 # Add script to install custom nodes
 COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
