@@ -72,14 +72,15 @@ ADD src/extra_model_paths.yaml ./
 WORKDIR /
 
 # Install Python runtime dependencies for the handler
-RUN uv pip install runpod requests websocket-client
+COPY requirements.txt .
+RUN uv pip install -r requirements.txt
 
 
 
 
 
 # Add application code and scripts
-ADD src/start.sh handler.py ./
+ADD src/start.sh handler.py comfyui_handler.py recolor_handler.py ./
 RUN chmod +x /start.sh
 
 # Add script to install custom nodes
@@ -90,8 +91,8 @@ ENV COMFY_WORKSPACE=/comfyui
 RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui
 
 
-# deps típicas
-RUN uv pip install pillow numpy scipy opencv-python requests einops
+# deps típicas (additional ones not in requirements.txt)
+RUN uv pip install scipy einops
 
 
 # Prevent pip from asking for confirmation during uninstall steps in custom nodes

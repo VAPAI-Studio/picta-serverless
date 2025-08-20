@@ -333,6 +333,18 @@ def handle_recolor_background(job_input, job_id):
         else:
             base64_data = image_data_uri
         
+        # Clean and pad the base64 string
+        base64_data = base64_data.strip()
+        
+        # Validate base64 string length
+        if len(base64_data) == 0:
+            return {"error": "Empty base64 string provided"}
+        
+        # Add padding if necessary
+        missing_padding = len(base64_data) % 4
+        if missing_padding:
+            base64_data += '=' * (4 - missing_padding)
+        
         # Decode the image
         image_bytes = base64.b64decode(base64_data)
         image_array = np.frombuffer(image_bytes, dtype=np.uint8)

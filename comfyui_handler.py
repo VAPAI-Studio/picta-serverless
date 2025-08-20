@@ -236,6 +236,21 @@ def upload_images(images):
                 base64_data = image_data_uri
             # --- End strip ---
 
+            # Clean and pad the base64 string
+            base64_data = base64_data.strip()
+            
+            # Validate base64 string length
+            if len(base64_data) == 0:
+                error_msg = f"Empty base64 string for {name}"
+                print(f"worker-comfyui - {error_msg}")
+                upload_errors.append(error_msg)
+                continue
+                
+            # Add padding if necessary
+            missing_padding = len(base64_data) % 4
+            if missing_padding:
+                base64_data += '=' * (4 - missing_padding)
+
             blob = base64.b64decode(base64_data)  # Decode the cleaned data
 
             # Prepare the form data
