@@ -2,3 +2,11 @@
 runpod~=1.7.12
 websocket-client
 requests
+
+# Image processing dependencies
+numpy
+opencv-python
+scikit-image
+rembg
+Pillow
+onnxruntime
