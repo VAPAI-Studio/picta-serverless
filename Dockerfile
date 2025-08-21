@@ -78,7 +78,7 @@ WORKDIR /
 
 # Install Python runtime dependencies for the handler
 COPY requirements.txt .
-RUN uv pip install --prefer-binary -r requirements.txt
+RUN uv pip install -r requirements.txt
 
 
 
