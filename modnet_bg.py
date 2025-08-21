@@ -23,11 +23,16 @@ except Exception:
 # --------------------------
 # ONNXRuntime lazy loader
 # --------------------------
+# 
+# RESOLUTION FIX: This module now automatically ensures all dimensions
+# are multiples of 32 to prevent MODNET ONNX "off-by-one" errors.
+# Suggested safe 16:9 resolutions: 512×288, 1024×576, 1536×864, 2048×1152
+# --------------------------
 _ort = None
 _sess = None
 _in_name = None
 _out_name = None
-_in_size = 512  # common export uses 512; adjust if your export differs
+_in_size = 512  # common export uses 512; automatically adjusted to multiple of 32
 
 def _load_ort():
     global _ort
@@ -106,25 +111,74 @@ def load_modnet_session(modnet_onnx_path: str = None):
 
     return _sess
 
+def _safe_resolution_multiple_of_32(target_size: int) -> int:
+    """
+    Ensure target size is a multiple of 32 for MODNET compatibility.
+    Args:
+        target_size: desired size
+    Returns:
+        Safe size that's a multiple of 32
+    """
+    return ((target_size + 31) // 32) * 32
+
+def get_safe_resolution_16_9(max_dimension: int = 1024) -> tuple:
+    """
+    Get a safe 16:9 resolution where both dimensions are multiples of 32.
+    Args:
+        max_dimension: maximum width or height
+    Returns:
+        (width, height) tuple with safe dimensions
+    """
+    # Common 16:9 resolutions that are multiples of 32
+    safe_16_9_resolutions = [
+        (512, 288),     # 512x288
+        (1024, 576),    # 1024x576  
+        (1536, 864),    # 1536x864
+        (2048, 1152),   # 2048x1152
+    ]
+    
+    # Find the largest resolution that fits within max_dimension
+    for w, h in safe_16_9_resolutions:
+        if w <= max_dimension and h <= max_dimension:
+            best_resolution = (w, h)
+    
+    # If max_dimension is smaller than our smallest safe resolution, calculate one
+    if max_dimension < 512:
+        # Calculate a 16:9 ratio and round to multiples of 32
+        height = _safe_resolution_multiple_of_32(int(max_dimension * 9 / 16))
+        width = _safe_resolution_multiple_of_32(int(height * 16 / 9))
+        best_resolution = (width, height)
+    
+    return best_resolution
+
 def _letterbox_rgb01(img: np.ndarray, size: int):
     """
-    Resize with aspect ratio, pad to square 'size' using edge padding.
+    Resize with aspect ratio, pad to safe resolution (multiple of 32) using edge padding.
     img: float32 [0,1], HxWx3
-    returns: padded_img [size,size,3], (H,W), (newH,newW)
+    returns: padded_img [safe_size,safe_size,3], (H,W), (newH,newW)
     """
     H, W = img.shape[:2]
     if H <= 0 or W <= 0:
         raise ValueError(f"Invalid image dimensions: {H}x{W}")
     
-    scale = size / float(min(H, W))
+    # Ensure the final size is a multiple of 32
+    safe_size = _safe_resolution_multiple_of_32(size)
+    
+    scale = safe_size / float(max(H, W))
     newH, newW = int(round(H * scale)), int(round(W * scale))
     
-    # Ensure minimum dimensions
-    newH = max(1, newH)
-    newW = max(1, newW)
+    # Ensure newH and newW are also multiples of 32 to avoid any edge cases
+    newH = _safe_resolution_multiple_of_32(newH)
+    newW = _safe_resolution_multiple_of_32(newW)
+    
+    # Ensure minimum dimensions (at least 32)
+    newH = max(32, newH)
+    newW = max(32, newW)
     
     resized = cv2.resize(img, (newW, newH), interpolation=cv2.INTER_AREA)
-    padH, padW = size - newH, size - newW
+    
+    # Calculate padding to reach safe_size x safe_size
+    padH, padW = safe_size - newH, safe_size - newW
     
     # Ensure non-negative padding
     padH = max(0, padH)
