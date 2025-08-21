@@ -57,25 +57,25 @@ RUN wget -qO- https://astral.sh/uv/install.sh | sh \
 ENV PATH="/opt/venv/bin:${PATH}"
 
 # Install comfy-cli + dependencies needed by it to install ComfyUI
-RUN uv pip install comfy-cli pip "setuptools<75" wheel
+# RUN uv pip install comfy-cli pip "setuptools<75" wheel
 
 # Install ComfyUI
-RUN if [ -n "${CUDA_VERSION_FOR_COMFY}" ]; then \
-      /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --cuda-version "${CUDA_VERSION_FOR_COMFY}" --nvidia; \
-    else \
-      /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --nvidia; \
-    fi
+# RUN if [ -n "${CUDA_VERSION_FOR_COMFY}" ]; then \
+#       /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --cuda-version "${CUDA_VERSION_FOR_COMFY}" --nvidia; \
+#     else \
+#       /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --nvidia; \
+#     fi
 
 # Upgrade PyTorch if needed (for newer CUDA versions)
-RUN if [ "$ENABLE_PYTORCH_UPGRADE" = "true" ]; then \
-      uv pip install --force-reinstall torch torchvision torchaudio --index-url ${PYTORCH_INDEX_URL}; \
-    fi
+# RUN if [ "$ENABLE_PYTORCH_UPGRADE" = "true" ]; then \
+#       uv pip install --force-reinstall torch torchvision torchaudio --index-url ${PYTORCH_INDEX_URL}; \
+#     fi
 
 # Change working directory to ComfyUI
-WORKDIR /comfyui
+# WORKDIR /comfyui
 
 # Support for the network volume
-ADD src/extra_model_paths.yaml ./
+# ADD src/extra_model_paths.yaml ./
 
 # Go back to the root
 WORKDIR /
@@ -108,52 +108,52 @@ RUN chmod +x /start.sh
 RUN ls -la /*.py
 
 # Add script to install custom nodes
-COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
-RUN chmod +x /usr/local/bin/comfy-node-install
+# COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
+# RUN chmod +x /usr/local/bin/comfy-node-install
 
-ENV COMFY_WORKSPACE=/comfyui
-RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui
+# ENV COMFY_WORKSPACE=/comfyui
+# RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui
 
 
 # deps típicas (additional ones not in requirements.txt)
-RUN uv pip install scipy einops
+# RUN uv pip install scipy einops
 
 
 # Prevent pip from asking for confirmation during uninstall steps in custom nodes
-ENV PIP_NO_INPUT=1
+# ENV PIP_NO_INPUT=1
 
 # Copy helper script to switch Manager network mode at container start
-COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
-RUN chmod +x /usr/local/bin/comfy-manager-set-mode
+# COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
+# RUN chmod +x /usr/local/bin/comfy-manager-set-mode
 
 # Set the default command to run when starting the container
 CMD ["/start.sh"]
 
 # Stage 2: Download models
-FROM base AS downloader
+# FROM base AS downloader
 
-ARG HUGGINGFACE_ACCESS_TOKEN
-# Set default model type if none is provided
-ARG MODEL_TYPE=flux1-dev
+# ARG HUGGINGFACE_ACCESS_TOKEN
+# # Set default model type if none is provided
+# ARG MODEL_TYPE=flux1-dev
 
-# Change working directory to ComfyUI
-WORKDIR /comfyui
+# # Change working directory to ComfyUI
+# WORKDIR /comfyui
 
-# Create necessary directories upfront
-RUN mkdir -p models/checkpoints models/vae models/unet models/clip
+# # Create necessary directories upfront
+# RUN mkdir -p models/checkpoints models/vae models/unet models/clip
 
-# Download checkpoints/vae/unet/clip models to include in image based on model type
-# RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
-#       wget -q -O models/unet/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
-#       wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
-#       wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
-#       wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
-#       wget -q -O models/vae/ae.safetensors https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors; \
-#     fi
+# # Download checkpoints/vae/unet/clip models to include in image based on model type
+# # RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
+# #       wget -q -O models/unet/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
+# #       wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
+# #       wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
+# #       wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
+# #       wget -q -O models/vae/ae.safetensors https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors; \
+# #     fi
 
 
 # Stage 3: Final image
-FROM base AS final
+# FROM base AS final
 
 # Copy models from stage 2 to the final image
-COPY --from=downloader /comfyui/models /comfyui/models
+# COPY --from=downloader /comfyui/models /comfyui/models

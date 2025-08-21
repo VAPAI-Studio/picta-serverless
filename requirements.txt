@@ -9,3 +9,4 @@ opencv-python-headless
 scikit-image
 Pillow
 onnxruntime
+transparent-background
