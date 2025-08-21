@@ -117,7 +117,7 @@ ENV ONNXRUNTIME_FORCE_CPU=0
 
 # Add application code and scripts
 ADD src/start.sh ./
-COPY handler.py comfyui_handler.py recolor_handler.py ./
+COPY handler.py comfyui_handler.py recolor_handler.py modnet_bg.py ./
 RUN chmod +x /start.sh
 
 # Debug: List files to ensure they're copied correctly
