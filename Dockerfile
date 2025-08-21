@@ -61,25 +61,29 @@ ENV PATH="/opt/venv/bin:${PATH}"
 ENV PYTHONPATH="/:${PYTHONPATH}"
 
 # Install comfy-cli + dependencies needed by it to install ComfyUI
-# RUN uv pip install comfy-cli pip "setuptools<75" wheel
+RUN uv pip install comfy-cli pip "setuptools<75" wheel
 
 # Install ComfyUI
-# RUN if [ -n "${CUDA_VERSION_FOR_COMFY}" ]; then \
-#       /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --cuda-version "${CUDA_VERSION_FOR_COMFY}" --nvidia; \
-#     else \
-#       /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --nvidia; \
-#     fi
+RUN if [ -n "${CUDA_VERSION_FOR_COMFY}" ]; then \
+      /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --cuda-version "${CUDA_VERSION_FOR_COMFY}" --nvidia; \
+    else \
+      /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --nvidia; \
+    fi
+
+# Verifica que ComfyUI esté donde esperamos
+RUN test -d /comfyui/ComfyUI && test -f /comfyui/ComfyUI/main.py || \
+    (echo "ERROR: ComfyUI/main.py no encontrado" && ls -la /comfyui && exit 1)
 
 # Upgrade PyTorch if needed (for newer CUDA versions)
-# RUN if [ "$ENABLE_PYTORCH_UPGRADE" = "true" ]; then \
-#       uv pip install --force-reinstall torch torchvision torchaudio --index-url ${PYTORCH_INDEX_URL}; \
-#     fi
+RUN if [ "$ENABLE_PYTORCH_UPGRADE" = "true" ]; then \
+      uv pip install --force-reinstall torch torchvision torchaudio --index-url ${PYTORCH_INDEX_URL}; \
+    fi
 
 # Change working directory to ComfyUI
-# WORKDIR /comfyui
+WORKDIR /comfyui
 
 # Support for the network volume
-# ADD src/extra_model_paths.yaml ./
+ADD src/extra_model_paths.yaml ./
 
 # Go back to the root
 WORKDIR /
@@ -88,7 +92,8 @@ WORKDIR /
 COPY requirements.txt .
 
 # Install ONNX Runtime GPU with fallback to CPU
-RUN uv pip install "onnxruntime-gpu>=1.18,<1.19" || uv pip install "onnxruntime>=1.18,<1.19"
+# Try latest version first (supports CUDA 12.x), then fallback to CPU version
+RUN uv pip install "onnxruntime-gpu" || uv pip install "onnxruntime"
 
 # Si usás BuildKit y necesitas SSH for deps privadas (git@...), podés activar la línea comentada de --mount=type=ssh
 # RUN --mount=type=cache,target=/root/.cache/uv --mount=type=ssh \
@@ -124,6 +129,10 @@ ENV ONNXRUNTIME_FORCE_CPU=0
 # Fallback URL for runtime download if model is missing/corrupted
 ENV MODEL_URL=https://huggingface.co/gradio/Modnet/resolve/main/modnet.onnx
 
+# Additional ONNX Runtime configuration for better CUDA compatibility
+ENV OMP_NUM_THREADS=1
+ENV CUDA_MODULE_LOADING=LAZY
+
 
 
 
@@ -139,11 +148,11 @@ RUN ls -la /*.py
 RUN pwd && python -c "import sys; print('PYTHONPATH:', sys.path)"
 
 # Add script to install custom nodes
-# COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
-# RUN chmod +x /usr/local/bin/comfy-node-install
+COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
+RUN chmod +x /usr/local/bin/comfy-node-install
 
-# ENV COMFY_WORKSPACE=/comfyui
-# RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui
+ENV COMFY_WORKSPACE=/comfyui
+RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui || echo "[WARN] Some custom nodes failed to install"
 
 
 # deps típicas (additional ones not in requirements.txt)
@@ -154,8 +163,11 @@ RUN pwd && python -c "import sys; print('PYTHONPATH:', sys.path)"
 # ENV PIP_NO_INPUT=1
 
 # Copy helper script to switch Manager network mode at container start
-# COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
-# RUN chmod +x /usr/local/bin/comfy-manager-set-mode
+COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
+
+# Normaliza fin de línea por si el repo trae CRLF y asegúrate de permisos
+RUN sed -i 's/\r$//' /start.sh /usr/local/bin/comfy-manager-set-mode && \
+    chmod +x /start.sh /usr/local/bin/comfy-manager-set-mode
 
 # Set the default command to run when starting the container
 CMD ["/start.sh"]

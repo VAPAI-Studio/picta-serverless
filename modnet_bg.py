@@ -66,12 +66,27 @@ def load_modnet_session(modnet_onnx_path: str = None):
 
     providers = []
     if not force_cpu:
-        providers.append("CUDAExecutionProvider")
+        # Try CUDA providers with fallback
+        providers.extend([
+            ("CUDAExecutionProvider", {
+                "device_id": 0,
+                "arena_extend_strategy": "kNextPowerOfTwo",
+                "gpu_mem_limit": 2 * 1024 * 1024 * 1024,  # 2GB limit
+                "cudnn_conv_algo_search": "EXHAUSTIVE",
+                "do_copy_in_default_stream": True,
+            }),
+            "CUDAExecutionProvider"  # Fallback with default settings
+        ])
     providers.append("CPUExecutionProvider")
 
     try:
+        print(f"[MODNET] Attempting to load with providers: {[p[0] if isinstance(p, tuple) else p for p in providers]}")
         _sess = ort.InferenceSession(modnet_onnx_path, providers=providers)
-    except Exception:
+        actual_providers = _sess.get_providers()
+        print(f"[MODNET] Successfully loaded with providers: {actual_providers}")
+    except Exception as e:
+        print(f"[MODNET] CUDA providers failed: {e}")
+        print("[MODNET] Falling back to CPU-only execution")
         # hard fallback to CPU if CUDA wheel/provider mismatches
         _sess = ort.InferenceSession(modnet_onnx_path, providers=["CPUExecutionProvider"])
 
