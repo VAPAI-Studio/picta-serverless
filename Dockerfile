@@ -40,6 +40,8 @@ RUN apt-get update && apt-get install -y \
     && ln -sf /usr/bin/python3.12 /usr/bin/python \
     && ln -sf /usr/bin/pip3 /usr/bin/pip
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && update-ca-certificates
+
 # Clean up to reduce image size
 RUN apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
@@ -78,7 +80,18 @@ WORKDIR /
 
 # Install Python runtime dependencies for the handler
 COPY requirements.txt .
-RUN uv pip install -r requirements.txt
+
+# Si usás BuildKit y necesitas SSH para deps privadas (git@...), podés activar la línea comentada de --mount=type=ssh
+# RUN --mount=type=cache,target=/root/.cache/uv --mount=type=ssh \
+RUN set -eux; \
+    which uv; uv --version || true; \
+    python -V; which python; which pip; \
+    echo "----- First 200 lines of requirements.txt -----"; \
+    sed -n '1,200p' requirements.txt || true; \
+    echo "----------------------------------------------"; \
+    # Verbose para ver exactamente en qué paquete/índice truena
+    UV_VERBOSE=3 uv pip install -r requirements.txt
+
 
 
 
