@@ -47,8 +47,20 @@ def load_modnet_session(modnet_onnx_path: str = None):
 
     ort = _load_ort()
     modnet_onnx_path = modnet_onnx_path or os.environ.get("MODNET_ONNX_PATH", "/models/modnet/modnet.onnx")
-    if not os.path.isfile(modnet_onnx_path):
-        raise FileNotFoundError(f"MODNet ONNX not found at: {modnet_onnx_path}")
+
+    def _assert_model_looks_binary(path: str):
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"MODNet ONNX missing at {path}")
+        size = os.path.getsize(path)
+        if size < 1_000_000:
+            raise ValueError(f"ONNX too small ({size} bytes) — likely LFS pointer/HTML.")
+        with open(path, "rb") as f:
+            head = f.read(200)
+        hlow = head.lower()
+        if b"git-lfs" in hlow or b"<!doctype html" in hlow or b"<html" in hlow:
+            raise ValueError("ONNX looks like LFS pointer/HTML page, not a model.")
+
+    _assert_model_looks_binary(modnet_onnx_path)
 
     force_cpu = os.environ.get("ONNXRUNTIME_FORCE_CPU", "0") == "1"
 
