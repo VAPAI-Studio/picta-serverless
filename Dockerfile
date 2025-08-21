@@ -55,6 +55,8 @@ RUN wget -qO- https://astral.sh/uv/install.sh | sh \
 
 # Use the virtual environment for all subsequent commands
 ENV PATH="/opt/venv/bin:${PATH}"
+# Ensure root directory is in Python path for our modules
+ENV PYTHONPATH="/:${PYTHONPATH}"
 
 # Install comfy-cli + dependencies needed by it to install ComfyUI
 # RUN uv pip install comfy-cli pip "setuptools<75" wheel
@@ -122,6 +124,7 @@ RUN chmod +x /start.sh
 
 # Debug: List files to ensure they're copied correctly
 RUN ls -la /*.py
+RUN pwd && python -c "import sys; print('PYTHONPATH:', sys.path)"
 
 # Add script to install custom nodes
 # COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
