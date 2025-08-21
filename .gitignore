@@ -5,3 +5,12 @@ data
 models
 simulated_uploaded
 __pycache__
+
+# Test files and directories
+test-modnet.py
+test-image.jpg
+test-mask.png
+test-small.onnx
+test-images/
+test-output/
+logs/

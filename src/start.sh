@@ -17,7 +17,11 @@ echo "worker-comfyui: Starting ComfyUI"
 # Debug: Validate ComfyUI installation
 echo "[DEBUG] Checking ComfyUI installation..."
 ls -la /comfyui/ || true
-ls -la /comfyui/ComfyUI/ | head || true
+if [ -d /comfyui/ComfyUI ]; then
+    ls -la /comfyui/ComfyUI/ | head || true
+else
+    echo "[INFO] ComfyUI installed directly in /comfyui/"
+fi
 command -v comfy || echo "[WARN] comfy-cli not in PATH"
 command -v comfy-manager-set-mode || echo "[WARN] comfy-manager-set-mode not in PATH"
 

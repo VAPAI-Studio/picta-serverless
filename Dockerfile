@@ -5,7 +5,7 @@ ARG BASE_IMAGE=nvidia/cuda:12.6.3-cudnn-runtime-ubuntu24.04
 FROM ${BASE_IMAGE} AS base
 
 # Build arguments for this stage (defaults provided by docker-bake.hcl)
-ARG COMFYUI_VERSION=0.3.49
+ARG COMFYUI_VERSION=0.3.51
 ARG CUDA_VERSION_FOR_COMFY=12.6
 ARG ENABLE_PYTORCH_UPGRADE=false
 ARG PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu126
@@ -70,9 +70,14 @@ RUN if [ -n "${CUDA_VERSION_FOR_COMFY}" ]; then \
       /usr/bin/yes | comfy --workspace /comfyui install --version "${COMFYUI_VERSION}" --nvidia; \
     fi
 
-# Verifica que ComfyUI esté donde esperamos
-RUN test -d /comfyui/ComfyUI && test -f /comfyui/ComfyUI/main.py || \
-    (echo "ERROR: ComfyUI/main.py no encontrado" && ls -la /comfyui && exit 1)
+# Verify ComfyUI installation - handle both old and new structures
+RUN if [ -f /comfyui/main.py ]; then \
+      echo "ComfyUI found at /comfyui/main.py"; \
+    elif [ -f /comfyui/ComfyUI/main.py ]; then \
+      echo "ComfyUI found at /comfyui/ComfyUI/main.py"; \
+    else \
+      echo "ERROR: ComfyUI/main.py not found" && ls -la /comfyui && exit 1; \
+    fi
 
 # Upgrade PyTorch if needed (for newer CUDA versions)
 RUN if [ "$ENABLE_PYTORCH_UPGRADE" = "true" ]; then \

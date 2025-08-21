@@ -1,19 +1,77 @@
+version: '3.8'
+
 services:
-  comfyui-worker:
-    image: runpod/worker-comfyui:dev
-    pull_policy: never
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  worker-comfyui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker-comfyui-test
     environment:
+      # MODNET Configuration
+      - MODNET_ONNX_PATH=/models/modnet/modnet.onnx
+      - MODEL_URL=https://huggingface.co/ZHKKKe/MODNet/resolve/main/modnet_photographic_portrait_matting.onnx
+      # Optional: Set HF_TOKEN if using private models
+      # - HF_TOKEN=your_huggingface_token_here
+      
+      # ComfyUI Configuration
+      - COMFY_LOG_LEVEL=INFO
       - SERVE_API_LOCALLY=true
+      
+      # ONNXRuntime Configuration
+      - ONNXRUNTIME_FORCE_CPU=0  # Set to 1 to force CPU-only execution
+      
+      # RunPod Configuration (for local testing)
+      - RUNPOD_POD_ID=local-test
+      - RUNPOD_API_KEY=local-test-key
     ports:
-      - "8000:8000"
-      - "8188:8188"
+      - "8188:8188"  # ComfyUI Web UI
+      - "8000:8000"  # RunPod Handler API
     volumes:
-      - ./data/comfyui/output:/comfyui/output
-      - ./data/runpod-volume:/runpod-volume
+      # Mount models directory for persistence
+      - ./models:/models
+      # Mount logs for debugging
+      - ./logs:/logs
+    devices:
+      # Enable GPU access if available
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+    runtime: nvidia  # Requires nvidia-docker
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Optional: Add a simple test client
+  test-client:
+    image: curlimages/curl:latest
+    container_name: modnet-test-client
+    depends_on:
+      - worker-comfyui
+    environment:
+      - API_URL=http://worker-comfyui:8000
+    volumes:
+      - ./test-images:/test-images:ro
+      - ./test-output:/test-output
+    command: >
+      sh -c "
+        echo 'Waiting for API to be ready...' &&
+        while ! curl -f $${API_URL}/health >/dev/null 2>&1; do
+          sleep 5;
+        done &&
+        echo 'API is ready! Testing MODNET...' &&
+        curl -X POST $${API_URL}/run \
+          -H 'Content-Type: application/json' \
+          -d '{\"input\": {\"image\": \"test-image.jpg\"}}' &&
+        echo 'Test completed!'
+      "
+
+volumes:
+  models:
+  logs:
+
+networks:
+  default:
+    name: worker-comfyui-network
