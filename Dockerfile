@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     git \
     wget \
+    curl \
+    file \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
@@ -103,14 +105,24 @@ RUN set -eux; \
 RUN mkdir -p /models/modnet
 
 # Download MODNet ONNX model for serverless deployment
-RUN wget -q -O /models/modnet/modnet.onnx \
-    "https://github.com/ZHKKKe/MODNet/releases/download/pretrained_ckpt/modnet_photographic_portrait_matting.onnx" || \
-    wget -q -O /models/modnet/modnet.onnx \
-    "https://huggingface.co/briaai/RMBG-1.4/resolve/main/model.onnx" || \
-    echo "Warning: Could not download MODNet model. Please provide manually."
+RUN set -e && \
+    echo "Downloading MODNet ONNX model..." && \
+    (wget -q -O /models/modnet/modnet.onnx \
+        "https://huggingface.co/gradio/Modnet/resolve/main/modnet.onnx" || \
+     wget -q -O /models/modnet/modnet.onnx \
+        "https://huggingface.co/Xenova/modnet/resolve/main/onnx/model.onnx" || \
+     wget -q -O /models/modnet/modnet.onnx \
+        "https://huggingface.co/DavG25/modnet-pretrained-models/resolve/main/modnet.onnx" || \
+     (echo "Error: Could not download MODNet model from any source" && exit 1)) && \
+    echo "Verifying downloaded model..." && \
+    [ -f /models/modnet/modnet.onnx ] && \
+    [ $(wc -c < /models/modnet/modnet.onnx) -gt 1000000 ] && \
+    echo "MODNet model downloaded successfully: $(wc -c < /models/modnet/modnet.onnx) bytes"
 
 ENV MODNET_ONNX_PATH=/models/modnet/modnet.onnx
 ENV ONNXRUNTIME_FORCE_CPU=0
+# Fallback URL for runtime download if model is missing/corrupted
+ENV MODEL_URL=https://huggingface.co/gradio/Modnet/resolve/main/modnet.onnx
 
 
 
