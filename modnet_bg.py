@@ -98,10 +98,23 @@ def _letterbox_rgb01(img: np.ndarray, size: int):
     returns: padded_img [size,size,3], (H,W), (newH,newW)
     """
     H, W = img.shape[:2]
+    if H <= 0 or W <= 0:
+        raise ValueError(f"Invalid image dimensions: {H}x{W}")
+    
     scale = size / float(min(H, W))
     newH, newW = int(round(H * scale)), int(round(W * scale))
+    
+    # Ensure minimum dimensions
+    newH = max(1, newH)
+    newW = max(1, newW)
+    
     resized = cv2.resize(img, (newW, newH), interpolation=cv2.INTER_AREA)
     padH, padW = size - newH, size - newW
+    
+    # Ensure non-negative padding
+    padH = max(0, padH)
+    padW = max(0, padW)
+    
     # pad bottom/right; edge pad to avoid seams
     padded = np.pad(resized, ((0, padH), (0, padW), (0, 0)), mode="edge")
     return padded, (H, W), (newH, newW)
@@ -118,6 +131,12 @@ def get_person_mask_modnet_onnx(img_rgb: np.ndarray) -> np.ndarray:
     Input:  img_rgb float32 [0,1], HxWx3
     Output: mask float32 [0,1], HxW
     """
+    if img_rgb is None or img_rgb.size == 0:
+        raise ValueError("Input image is empty or None")
+    
+    if len(img_rgb.shape) != 3 or img_rgb.shape[2] != 3:
+        raise ValueError(f"Input image must be HxWx3, got shape {img_rgb.shape}")
+    
     sess = load_modnet_session()
     size = _in_size
 
@@ -139,7 +158,15 @@ def get_person_mask_modnet_onnx(img_rgb: np.ndarray) -> np.ndarray:
         raise RuntimeError(f"Unexpected MODNet output shape: {outputs[0].shape}")
 
     # crop away padding, resize back to original
-    matte = matte[:newH, :newW]
+    # Ensure we don't exceed matte dimensions
+    crop_h = min(newH, matte.shape[0])
+    crop_w = min(newW, matte.shape[1])
+    matte = matte[:crop_h, :crop_w]
+    
+    if matte.size == 0:
+        # Handle edge case of empty matte
+        return np.zeros((H, W), dtype=np.float32)
+    
     matte = cv2.resize(matte, (W, H), interpolation=cv2.INTER_LINEAR)
 
     # Optional gentle feather to suppress halos

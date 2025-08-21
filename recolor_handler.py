@@ -339,6 +339,13 @@ def handle_recolor_background(job_input, job_id):
         if img is None:
             return {"error": "Could not decode image data"}
         
+        # Validate image dimensions
+        if img.size == 0 or len(img.shape) != 3 or img.shape[0] <= 0 or img.shape[1] <= 0:
+            return {"error": f"Invalid image dimensions: {img.shape}"}
+        
+        if img.shape[2] != 3:
+            return {"error": f"Image must have 3 channels (RGB), got {img.shape[2]}"}
+        
         # Convert BGR to RGB and normalize to [0,1]
         img_rgb = img[..., ::-1].astype(np.float32) / 255.0
 
