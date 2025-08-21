@@ -7,6 +7,5 @@ requests
 numpy
 opencv-python-headless
 scikit-image
-rembg
 Pillow
 onnxruntime
