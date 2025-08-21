@@ -8,5 +8,4 @@ numpy
 opencv-python-headless
 scikit-image
 Pillow
-onnxruntime
-transparent-background
+onnxruntime-gpu>=1.18,<1.19

@@ -83,7 +83,10 @@ WORKDIR /
 # Install Python runtime dependencies for the handler
 COPY requirements.txt .
 
-# Si usás BuildKit y necesitas SSH para deps privadas (git@...), podés activar la línea comentada de --mount=type=ssh
+# Install ONNX Runtime GPU with fallback to CPU
+RUN uv pip install "onnxruntime-gpu>=1.18,<1.19" || uv pip install "onnxruntime>=1.18,<1.19"
+
+# Si usás BuildKit y necesitas SSH for deps privadas (git@...), podés activar la línea comentada de --mount=type=ssh
 # RUN --mount=type=cache,target=/root/.cache/uv --mount=type=ssh \
 RUN set -eux; \
     which uv; uv --version || true; \
@@ -93,6 +96,19 @@ RUN set -eux; \
     echo "----------------------------------------------"; \
     # Verbose para ver exactamente en qué paquete/índice truena
     UV_VERBOSE=3 uv pip install -r requirements.txt
+
+# Model directory
+RUN mkdir -p /models/modnet
+
+# Download MODNet ONNX model for serverless deployment
+RUN wget -q -O /models/modnet/modnet.onnx \
+    "https://github.com/ZHKKKe/MODNet/releases/download/pretrained_ckpt/modnet_photographic_portrait_matting.onnx" || \
+    wget -q -O /models/modnet/modnet.onnx \
+    "https://huggingface.co/briaai/RMBG-1.4/resolve/main/model.onnx" || \
+    echo "Warning: Could not download MODNet model. Please provide manually."
+
+ENV MODNET_ONNX_PATH=/models/modnet/modnet.onnx
+ENV ONNXRUNTIME_FORCE_CPU=0
 
 
 

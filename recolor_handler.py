@@ -4,8 +4,7 @@ import numpy as np
 import cv2
 from skimage import color
 from skimage.color import deltaE_ciede2000
-from transparent_background import Remover
-from PIL import Image
+from modnet_bg import get_person_mask_modnet_onnx
 
 VALID_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp")
 
@@ -53,26 +52,6 @@ def improve_mask_consistency(mask: np.ndarray, min_area: int = 1000) -> np.ndarr
     return np.clip(mask_smooth, 0, 1)
 
 
-# one global instance (loads weights once)
-_tb_remover = Remover()  # uses InSPyReNet; returns RGBA/masks
-
-def get_person_mask_tb(img_rgb: np.ndarray) -> np.ndarray:
-    """
-    Drop-in replacement for get_person_mask_rembg.
-    img_rgb: float32, [0,1], HxWx3
-    returns: float32 mask in [0,1], HxW
-    """
-    img_uint8 = (np.clip(img_rgb, 0, 1) * 255).astype(np.uint8)
-    pil_img = Image.fromarray(img_uint8)
-    # 'rgba' -> returns RGBA image; alpha is the matte
-    out = _tb_remover.process(pil_img, type='rgba')
-    out_np = np.asarray(out)
-    if out_np.shape[-1] == 4:
-        mask = out_np[..., 3] / 255.0
-    else:
-        # fallback: if only RGB is returned, treat non-black as FG
-        mask = (out_np.sum(axis=-1) > 0).astype(np.float32)
-    return improve_mask_consistency(mask)
 
 
 def recolor_background_consistent(img_rgb: np.ndarray,
@@ -204,7 +183,7 @@ def process_image_recolor(img_rgb: np.ndarray,
                          alpha_chroma: float = 1.0,
                          use_consistent_bg: bool = True):
     
-    mask_person = get_person_mask_tb(img_rgb)
+    mask_person = get_person_mask_modnet_onnx(img_rgb)
 
     if use_consistent_bg:
         recolored, lab_new, metrics = recolor_background_consistent(
