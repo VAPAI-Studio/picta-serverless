@@ -98,6 +98,7 @@
     
     # ---------- Stage: final (add only runtime configs relying on network volume) ----------
     FROM base AS final
+    # comment
     
     # Point ComfyUI to the mounted network volume paths
     ADD src/extra_model_paths.yaml /comfyui/extra_model_paths.yaml
