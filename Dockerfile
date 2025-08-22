@@ -102,10 +102,6 @@
     # Point ComfyUI to the mounted network volume paths
     ADD src/extra_model_paths.yaml /comfyui/extra_model_paths.yaml
     
-    # Optional: bootstrap to ensure dirs / first-time seed if you want that behavior
-    ADD src/bootstrap_models.sh /usr/local/bin/bootstrap-models
-    RUN chmod +x /usr/local/bin/bootstrap-models
-    
     # Final CMD (single source of truth)
     CMD ["/start.sh"]
     
