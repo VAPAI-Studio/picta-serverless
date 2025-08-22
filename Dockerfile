@@ -178,30 +178,30 @@ RUN sed -i 's/\r$//' /start.sh /usr/local/bin/comfy-manager-set-mode && \
 CMD ["/start.sh"]
 
 # Stage 2: Download models
-# FROM base AS downloader
+FROM base AS downloader
 
 # ARG HUGGINGFACE_ACCESS_TOKEN
 # # Set default model type if none is provided
-# ARG MODEL_TYPE=flux1-dev
+ARG MODEL_TYPE=flux1-dev
 
 # # Change working directory to ComfyUI
-# WORKDIR /comfyui
+WORKDIR /comfyui
 
 # # Create necessary directories upfront
-# RUN mkdir -p models/checkpoints models/vae models/unet models/clip
+RUN mkdir -p models/checkpoints models/vae models/unet models/clip
 
 # # Download checkpoints/vae/unet/clip models to include in image based on model type
-# # RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
-# #       wget -q -O models/unet/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
-# #       wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
-# #       wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
-# #       wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
-# #       wget -q -O models/vae/ae.safetensors https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors; \
-# #     fi
+RUN if [ "$MODEL_TYPE" = "flux1-dev" ]; then \
+      wget -q -O models/unet/flux1-kontext-dev-fp8-e4m3fn.safetensors https://huggingface.co/6chan/flux1-kontext-dev-fp8/resolve/main/flux1-kontext-dev-fp8-e4m3fn.safetensors && \
+      wget -q -O models/loras/aura_remove_1200x800_comfy.safetensors https://huggingface.co/yvesfogel/picta_auraremove_1200x800/resolve/main/aura_remove_1200x800_comfy.safetensors && \
+      wget -q -O models/clip/clip_l.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors && \
+      wget -q -O models/clip/t5xxl_fp8_e4m3fn.safetensors https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp8_e4m3fn.safetensors && \
+      wget -q -O models/vae/ae.safetensors https://huggingface.co/ffxvs/vae-flux/resolve/main/ae.safetensors; \
+    fi
 
 
 # Stage 3: Final image
-# FROM base AS final
+FROM base AS final
 
 # Copy models from stage 2 to the final image
-# COPY --from=downloader /comfyui/models /comfyui/models
+COPY --from=downloader /comfyui/models /comfyui/models
