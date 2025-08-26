@@ -1,5 +1,4 @@
-# --- Runpod worker specific mapping (if your own code needs it) ---
-runpod_worker_comfy:
+comfyui:
   base_path: /runpod-volume
   checkpoints: models/checkpoints/
   clip: models/clip/
@@ -13,17 +12,3 @@ runpod_worker_comfy:
   unet: models/unet/
   diffusion_models: models/diffusion_models/
   text_encoders: models/text_encoders/
-
-# --- ComfyUI extra model paths (this is what ComfyUI actually uses) ---
-checkpoints: /runpod-volume/models/checkpoints
-clip: /runpod-volume/models/clip
-clip_vision: /runpod-volume/models/clip_vision
-configs: /runpod-volume/models/configs
-controlnet: /runpod-volume/models/controlnet
-embeddings: /runpod-volume/models/embeddings
-loras: /runpod-volume/models/loras
-upscale_models: /runpod-volume/models/upscale_models
-vae: /runpod-volume/models/vae
-unet: /runpod-volume/models/unet
-diffusion_models: /runpod-volume/models/diffusion_models
-text_encoders: /runpod-volume/models/text_encoders
