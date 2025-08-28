@@ -89,7 +89,7 @@
     COPY scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install
     RUN chmod +x /usr/local/bin/comfy-node-install
     ENV COMFY_WORKSPACE=/comfyui
-    RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui || echo "[WARN] Some custom nodes failed to install"
+    RUN cd /comfyui && comfy-node-install comfyui-easy-use was-node-suite-comfyui comfyui-tooling-nodes || echo "[WARN] Some custom nodes failed to install"
     
     # Manager helper
     COPY scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode
